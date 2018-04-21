@@ -1,0 +1,11 @@
+{
+  "name": "maker-scraper",
+  "version": "1.0.0",
+  "description": "Gets the class data from the makerplace website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
