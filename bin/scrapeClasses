@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news-scraper-heroku-test";
-
-mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI, {
-  useMongoClient: true
-});

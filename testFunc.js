@@ -64,7 +64,6 @@ function sayHello() {
         data.map(item => (
           console.log(item._id)
         ));
-        process.exit(0);
     })
     .catch(err => {
         console.error(err);
