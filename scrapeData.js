@@ -1,15 +1,11 @@
 const mongoose = require("mongoose");
 const db = require("./models");
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news-scraper-heroku-test";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/maker-scraper-heroku-test";
 mongoose.Promise = global.Promise;
 // This file empties the Books collection and inserts the memberships below
-mongoose.connect(
-    process.env.MONGODB_URI || "mongodb://localhost/makerplace",
-    {
-        useMongoClient: true
-    }
-);
+mongoose.connect(MONGODB_URI);
 
+var scrape = require("./scripts/scrape.js");
 
 const membershipsSeed = [
     {
@@ -56,7 +52,7 @@ const membershipsSeed = [
     }
 ];
 
-function sayHello() {
+function addClasses() {
     db.Membership
 	.remove({})
 	.then (() => db.Membership.insertMany(membershipsSeed))
@@ -70,5 +66,42 @@ function sayHello() {
         process.exit(1);
     });
 }
+function scrapeClasses() {
+    // scrape has a callback function that will send back classData and a boolean of weather it's done
+    return scrape(function(classData, done) {
+      if (classData.url) {
+        db.Class.find({"url": classData.url}).limit(1)
+        .then(function(found) {
+          if (!found.length) {
+            console.log('not found');
+            db.Class.create(classData)
+              .then(function(classAdded) {
+                {
+                  console.log("added " + classAdded.id);
+                  console.log(done);
+                  if (done) {
+                  	console.log("done");
+                  }
+                }
+             })
+             .catch(function(err) {
+                   console.log("------------------------------------------------------------------------------");
+                   console.log(err);
+             });
+          } else {
+            console.log("in the db", done);
+            if (done) {
+            	console.log("done");
+            }
+          } 
+        });
+      } else {
+        if (done) {
+        	console.log("done");
+        }
+      }
+    })
+  }
 
-sayHello();
+
+scrapeClasses();
