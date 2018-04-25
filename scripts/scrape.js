@@ -1,6 +1,8 @@
 var axios = require("axios");
 var cheerio = require("cheerio");
 var db = require("../models");
+var moment = require('moment');
+
 
 //addToDB is the callback passed from Fetch.js
 var scrape = function(addToDB) {
@@ -82,6 +84,11 @@ var scrape = function(addToDB) {
 						var location = $(".eventInfoLocation").children(".eventInfoBoxValue").children("span").html();
 						var spacesLeft = $(".eventInfoSpacesLeft").children(".eventInfoBoxValue").children("span").html();
 						var classTimes = [];
+						var classDay = [];
+						var classMonth = [];
+						var classYear = [];
+						var classStartTime = [];
+						var classEndTime = [];
 						var registrationOptions = [];
 						var url = classLinks[count];
 						// not getting data
@@ -99,14 +106,80 @@ var scrape = function(addToDB) {
 						description = description.replace(/[\s\r\t\n]{2,}/g, '</p><p>');
 						
 						$(".eventInfoSession").each(function(i, element){
-							var data = $(this).find("span").html();
+							var data = $(this).find("span").html();	
 							classTimes.push(data);
 						});
 
 						$(".regTypeLiLabel").each(function(){
 							var data = $(this).find("strong").html();
 							registrationOptions.push(data);
-						})
+						});
+
+
+							// if there are multiple sessions for this class, there will be elements in the classTimes array
+							if (classTimes.length) {
+								for (var i = 0; i < classTimes.length; i++) {
+
+								var dayOfMonth = parseInt(classTimes[i].substring(0, 2));
+								var monthStr;
+								// var date;
+								var thisStartTime;
+								var endTime;
+
+								var indexOfEndStartTime = classTimes[i].indexOf("PM") + 3;
+								var indexOfEndEndTime = indexOfEndStartTime + 8;
+								var indexOfEndDate = classTimes[i].indexOf(",") + 2;
+								var indexOfEndMonth = classTimes[i].indexOf("201");
+
+								// date = classTimes[i].substring(0, indexOfEndDate -2);
+								thisStartTime = classTimes[i].substring(indexOfEndDate, indexOfEndStartTime);
+								endTime = classTimes[i].substring(indexOfEndStartTime, indexOfEndEndTime);
+
+								monthStr = classTimes[i].substring(3, indexOfEndMonth);
+
+								var monthNum = moment().month(monthStr).format("M");
+
+								var year = moment(classTimes[i],"DD/MMM/YYYY").year();
+
+								classDay.push(dayOfMonth);
+								classMonth.push(monthNum);
+								classYear.push(year);
+								classStartTime.push(thisStartTime);
+								classEndTime.push(endTime);
+
+								}
+
+							} else {
+							 //parse startDate, storing the data as an array with just one element to make using the data later simpler								
+								var dayOfMonth = parseInt(startDate.substring(0, 2));
+								
+								var monthStr;
+
+								var indexOfEndMonth = startDate.indexOf("201");
+
+								monthStr = startDate.substring(3, indexOfEndMonth);
+
+								var monthNum = moment().month(monthStr).format("M");
+
+								var year = moment(startDate,"DD/MMM/YYYY").year();
+
+								classDay.push(dayOfMonth);
+								classMonth.push(monthNum);
+								classYear.push(year);
+
+							 //parse startTime, storing the data as an array with just one element to make using the data later simpler
+								var endTime;
+
+								var indexOfEndStartTime = startTime.indexOf("PM") + 3;
+								var indexOfEndEndTime = indexOfEndStartTime + 8;
+								
+								thisStartTime = startTime.substring(indexOfEndDate, indexOfEndStartTime);
+								thisEndTime = startTime.substring(indexOfEndStartTime, indexOfEndEndTime);
+
+								classStartTime.push(thisStartTime);
+								classEndTime.push(thisEndTime);
+
+							};
 
 						lesson = {
 							title,
@@ -117,6 +190,11 @@ var scrape = function(addToDB) {
 							spacesLeft,
 							schedule,
 							classTimes,
+							classDay,
+							classMonth,
+							classYear,
+							classStartTime,
+							classEndTime,
 							registrationOptions,
 							registerLink,
 							description,
