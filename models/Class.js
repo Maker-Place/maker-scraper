@@ -54,6 +54,36 @@ var ClassSchema = new Schema({
     }
   ],
 
+  classDay: [
+  {
+      type: Number,
+  }
+  ],
+
+  classMonth: [
+    {
+      type: Number,
+    }
+  ],
+
+  classYear: [
+    {
+      type: Number,
+    }
+  ],
+
+  classStartTime: [
+    {
+      type: String,
+    }
+  ],
+
+  classEndTime: [
+    {
+      type: String,
+    }
+  ],
+
   registrationOptions: [
     {
       type: String,
