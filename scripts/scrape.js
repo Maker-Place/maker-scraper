@@ -1,6 +1,9 @@
 var axios = require("axios");
 var cheerio = require("cheerio");
 var db = require("../models");
+var mongoose = require("mongoose");
+
+var ObjectId = require('mongodb').ObjectID;
 
 //addToDB is the callback passed from Fetch.js
 var scrape = function(addToDB) {
@@ -84,7 +87,10 @@ var scrape = function(addToDB) {
 						var classTimes = [];
 						var registrationOptions = [];
 						var url = classLinks[count];
-						// not getting data
+						var eventidstart = "aaaaaaaaaaaaaaaaa";
+						var eventid = url.substr(-7);
+						var fullid = eventidstart + eventid;
+						_id = ObjectId(fullid);
 						var registerLink = $(".boxActionContainer .inner a").attr("href");
 						var description = $(".gadgetEventEditableArea").html();
 						//strip out the html
@@ -108,7 +114,10 @@ var scrape = function(addToDB) {
 							registrationOptions.push(data);
 						})
 
+						// console.log(_id);
+
 						lesson = {
+							_id,
 							title,
 							startDate,
 							endDate,

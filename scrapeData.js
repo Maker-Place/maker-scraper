@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const db = require("./models");
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/maker-scraper-heroku-test";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/makerplace";
 mongoose.Promise = global.Promise;
 mongoose.connect(MONGODB_URI);
 
