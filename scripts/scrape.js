@@ -6,53 +6,57 @@ var ObjectId = require('mongodb').ObjectID;
 var moment = require('moment');
 
 
-//addToDB is the callback passed from Fetch.js
+//addToDB is the callback passed in where the function is used
 var scrape = function(addToDB) {
 	console.log("scraping");
 	
-  // First, we grab the body of the html with request
+  // First, we grab the body of the html
 	axios.get("http://makerplace.com/classes").then(function(response) {
 	    // Then, we load that into cheerio and save it to $ for a shorthand selector
 	    var $ = cheerio.load(response.data);
-	    var links = [];
+
+	    // categoryLinks will be an array of objects with the category title and link
+	    var categoryLinks = [];
 	    
-	    var article = $("#id_MenuGadget_idMainMenu1208398").find("a").each(function(i,element) {
+	    //the div with this id contains the navigation links to each of the category pages
+	    $("#id_MenuGadget_idMainMenu1208398").find("a").each(function(i,element) {
 	    	// add each link in the menu to the array
-	    	links.push({
+	    	categoryLinks.push({
 	    		category: $(this).html(),
 	    		link: $(this).attr("href")
 	    	});
 	    });
 
-	    var count = 0;
-	    getCategory(count);
+	    var categoryCount = 0;
+	    getCategory(categoryCount);
 		
 		// follow the link and get the list of classes
-	    function getCategory(count) {
-	    	let category = links[count].category;
+	    function getCategory(categoryCount) {
+	    	let category = categoryLinks[categoryCount].category;
 	    	let lastCategory = false;
-
-			axios.get(links[count].link)
-			.then(function(response) {
-				
-				// the category page
-				var $ = cheerio.load(response.data);
-				
-				//increment categories and check if we're done
-				count++;
-				if (count < links.length) {
-					getCategory(count);
-				} else {
-					lastCategory = true;
-				}
-				// passing the cheerio data, category, lastCatogry Boolean, and callback function addTo DB
-				getClasses($, category, lastCategory, addToDB);
-				
-	    	})
-	    	.catch(function(err) {
-	    		console.log(err);
-	    		res.json(err);
-	    	})
+			
+			// go to the page for the category and then get all the links to the classes in that category
+			axios.get(categoryLinks[categoryCount].link)
+				.then(function(response) {
+					
+					// the category page
+					var $ = cheerio.load(response.data);
+					
+					//increment categories and check if we're done
+					categoryCount++;
+					if (categoryCount < categoryLinks.length) {
+						getCategory(categoryCount);
+					} else {
+						lastCategory = true;
+					}
+					// passing the cheerio data, category, lastCatogry Boolean, and callback function addTo DB
+					getClasses($, category, lastCategory, addToDB);
+					
+		    	})
+		    	.catch(function(err) {
+		    		console.log(err);
+		    		res.json(err);
+		    	})
 	    }
 
 		function getClasses($, category, lastCategory, cb) {
@@ -61,6 +65,7 @@ var scrape = function(addToDB) {
 			//get all the class links
 			$(".eventModuleItem").each(function(i,element) {
 				var link = $(this).find(".itemTitleContainer").find("a").attr("href");
+				// we'll only get one link to the class per category
 				if (!classLinks.includes(link)) {
 					classLinks.push(link);
 				}
@@ -74,6 +79,7 @@ var scrape = function(addToDB) {
 			function getClassData(count) {
 
 				if (classLinks[count]) {
+					// go to the page for the class and get all the data
 					axios.get(classLinks[count])
 					.then(function(response) {
 						var $ = cheerio.load(response.data);
@@ -120,7 +126,7 @@ var scrape = function(addToDB) {
 							registrationOptions.push(data);
 						});
 
-
+							// storing the class time data for the calendar plugin
 							// if there are multiple sessions for this class, there will be elements in the classTimes array
 							if (classTimes.length) {
 								for (var i = 0; i < classTimes.length; i++) {
