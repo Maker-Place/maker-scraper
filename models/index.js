@@ -2,5 +2,6 @@
 
 module.exports = {
   Class: require("./Class"),
-  Membership: require("./Membership")
+  Membership: require("./Membership"),
+  Category: require("./Category")
 };

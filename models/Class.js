@@ -12,11 +12,6 @@ var ClassSchema = new Schema({
     required: true
   },
 
-  category: {
-    type: String,
-    required: true
-  },
-
   startDate: {
     type: String,
     required: false
